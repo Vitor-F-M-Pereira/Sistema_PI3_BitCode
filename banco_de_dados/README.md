@@ -69,6 +69,7 @@ Charset: utf8mb4
 Engine: InnoDB
 
 👥 Equipe de Desenvolvimento - BitCode (3º Semestre DSM)
+
 Brenda Vitória Scarpioni
 
 César Antonio de Oliveira Rocha
