@@ -43,6 +43,7 @@ MySQL
 🛡 Área administrativa para coordenadores/administradores
 
 👥 Equipe de Desenvolvimento (BitCode)
+
 Brenda Vitória Scarpioni
 
 César Antonio de Oliveira Rocha
