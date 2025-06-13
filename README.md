@@ -1,7 +1,7 @@
-📚 Sistema de Planejamento e Controle de Aulas – Colégio Sanquim
+# 📚 Sistema de Planejamento e Controle de Aulas – Colégio Sanquim
 Projeto Interdisciplinar desenvolvido no 3º semestre do curso de Desenvolvimento de Software Multiplataforma (DSM) da Fatec.
 
-🖥 Sobre o Projeto
+# 🖥 Sobre o Projeto
 Este sistema foi criado para auxiliar o Colégio Sanquim no gerenciamento de:
 
 Cadastro de alunos
@@ -14,7 +14,7 @@ Registro de aulas ministradas
 
 O foco principal é oferecer uma solução simples e funcional para professores, administradores e coordenadores realizarem a gestão de forma centralizada.
 
-🛠 Tecnologias Utilizadas
+# 🛠 Tecnologias Utilizadas
 Frontend:
 
 HTML5
@@ -31,7 +31,7 @@ Banco de Dados:
 
 MySQL
 
-⚙ Funcionalidades Principais
+# ⚙ Funcionalidades Principais
 📋 Cadastro e aprovação de alunos (com controle de vagas por curso)
 
 🗓 Planejamento prévio de aulas por matéria
@@ -42,7 +42,7 @@ MySQL
 
 🛡 Área administrativa para coordenadores/administradores
 
-👥 Equipe de Desenvolvimento (BitCode)
+# 👥 Equipe de Desenvolvimento (BitCode)
 Brenda Vitória Scarpioni
 
 César Antonio de Oliveira Rocha

@@ -1,7 +1,7 @@
-📚 Banco de Dados - Sistema Escolar Sanquim
+# 📚 Banco de Dados - Sistema Escolar Sanquim
 Este repositório contém o banco de dados utilizado pelo sistema de planejamento de aulas e gerenciamento de alunos do Projeto Interdisciplinar - 3º Semestre DSM - Equipe BitCode.
 
-📌 Estrutura do Banco
+# 📌 Estrutura do Banco
 O banco de dados contém as seguintes tabelas principais:
 
 usuarios → Administradores (superusuários)
@@ -16,7 +16,7 @@ planos_aula → Planejamento de aulas
 
 registro_aulas → Registro das aulas ministradas
 
-🛠 Como Criar um Administrador (Superusuário)
+# 🛠 Como Criar um Administrador (Superusuário)
 O sistema só permite acesso ao painel administrativo para usuários cadastrados na tabela usuarios com o campo tipo_usuario definido como 'admin'.
 
 ✅ Exemplo de INSERT SQL para criar um superusuário
@@ -68,7 +68,7 @@ Charset: utf8mb4
 
 Engine: InnoDB
 
-👥 Equipe de Desenvolvimento - BitCode (3º Semestre DSM)
+# 👥 Equipe de Desenvolvimento - BitCode (3º Semestre DSM)
 Brenda Vitória Scarpioni
 
 César Antonio de Oliveira Rocha
