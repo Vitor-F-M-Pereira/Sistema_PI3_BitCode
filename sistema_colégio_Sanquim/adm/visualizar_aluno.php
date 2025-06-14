@@ -3,25 +3,6 @@ session_start();
 include '../conexao.php';
 include '../menu.php';
 
-$mostrarModal = false;
-$tituloModal = "";
-$mensagemModal = "";
-$classeModal = "";
-
-if (isset($_SESSION['mensagem_sucesso'])) {
-    $mostrarModal = true;
-    $tituloModal = "Sucesso!";
-    $mensagemModal = $_SESSION['mensagem_sucesso'];
-    $classeModal = "modal-success";
-    unset($_SESSION['mensagem_sucesso']);
-} elseif (isset($_SESSION['mensagem_erro'])) {
-    $mostrarModal = true;
-    $tituloModal = "Erro!";
-    $mensagemModal = $_SESSION['mensagem_erro'];
-    $classeModal = "modal-danger";
-    unset($_SESSION['mensagem_erro']);
-}
-
 if (!isset($_SESSION['tipo_usuario']) || $_SESSION['tipo_usuario'] !== 'admin') {
     header("Location: ../login.php");
     exit;
@@ -55,6 +36,7 @@ $aluno = $result->fetch_assoc();
     <link href="../style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+
         .topo {
             background: linear-gradient(135deg, var(--verde-escuro), var(--verde-principal));
             color: white;
@@ -107,14 +89,15 @@ $aluno = $result->fetch_assoc();
             <p><strong>Curso:</strong> <?= htmlspecialchars($aluno['curso']) ?></p>
 
             <?php if (!empty($aluno['comprovante_residencia'])): ?>
-                <p><strong>Comprovante de Residência:</strong>
-                    <a href="../comprovantes/<?= htmlspecialchars($aluno['comprovante_residencia']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-file-alt me-1"></i>Visualizar Arquivo
-                    </a>
-                </p>
-            <?php else: ?>
-                <p><strong>Comprovante de Residência:</strong> Não enviado.</p>
-            <?php endif; ?>
+    <p><strong>Comprovante de Residência:</strong>
+        <a href="../<?= htmlspecialchars($aluno['comprovante_residencia']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-file-alt me-1"></i>Visualizar Arquivo
+        </a>
+    </p>
+<?php else: ?>
+    <p><strong>Comprovante de Residência:</strong> Não enviado.</p>
+<?php endif; ?>
+
         </div>
 
         <div class="text-end mt-4">
@@ -130,32 +113,6 @@ $aluno = $result->fetch_assoc();
             </a>
         </div>
     </div>
-
-    <?php if ($mostrarModal): ?>
-    <div class="modal fade <?= $classeModal ?>" id="modalFeedback" tabindex="-1" aria-labelledby="modalFeedbackLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title"><?= $tituloModal ?></h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-          <div class="modal-body text-center">
-            <p><?= $mensagemModal ?></p>
-          </div>
-          <div class="modal-footer justify-content-center">
-            <button type="button" class="btn" data-bs-dismiss="modal">OK</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var modal = new bootstrap.Modal(document.getElementById('modalFeedback'));
-        modal.show();
-    });
-    </script>
-    <?php endif; ?>
 
     <?php include '../footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

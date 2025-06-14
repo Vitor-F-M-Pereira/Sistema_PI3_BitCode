@@ -241,14 +241,14 @@ include 'menu.php';
                     </div>
 
                     <div class="file-upload mb-4">
-                        <label for="documentos" class="form-label d-block">
-                            <i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color: var(--verde-principal);"></i>
-                            <h5>Comprovante de Residência</h5>
-                            <p class="text-muted">Arraste ou clique para enviar (PDF, JPG, PNG)</p>
-                            <input class="d-none" type="file" id="documentos" name="documentos[]" multiple accept=".pdf,.jpg,.jpeg,.png">
-                            <span class="btn btn-principal">Selecionar Arquivos</span>
-                        </label>
-                    </div>
+                            <label for="documentos" class="form-label d-block">
+                                <i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color: var(--verde-principal);"></i>
+                                <h5>Comprovante de Residência</h5>
+                                <p class="text-muted">Arraste ou clique para enviar (PDF, JPG, PNG)</p>
+                                <input class="d-none" type="file" id="documentos" name="documentos[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                <span class="btn btn-principal">Selecionar Arquivos</span>
+                            </label>
+                        </div>
 
                     <div class="d-flex justify-content-between mt-4">
                         <button type="submit" class="btn btn-success">Enviar Pré-Matrícula</button>
@@ -315,7 +315,23 @@ function buscarEndereco() {
         .catch(() => alert("Erro ao buscar CEP."));
 }
 </script>
-
+<script>
+        $(document).ready(function () {
+            $('#cpf').inputmask('999.999.999-99');
+            $('#cpf_responsavel').inputmask('999.999.999-99');
+            $('#cep').inputmask('99999-999');
+            
+            $('.file-upload').click(function() {
+                $('#documentos').click();
+            });
+            
+            $('#documentos').change(function() {
+                if (this.files.length > 0) {
+                    $('.file-upload h5').html('<i class="fas fa-check-circle text-success me-2"></i>' + this.files.length + ' arquivo(s) selecionado(s)');
+                }
+            });
+        });
+    </script>
 <?php include 'footer.php'; ?>
 </body>
 </html>
