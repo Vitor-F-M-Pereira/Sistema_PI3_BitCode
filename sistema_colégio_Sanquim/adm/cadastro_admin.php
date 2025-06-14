@@ -2,7 +2,11 @@
 session_start();
 include '../conexao.php';
 include '../menu.php';
-$mensagem = '';
+
+$mostrarModal = false;
+$tituloModal = "";
+$mensagemModal = "";
+$classeModal = "";
 
 if (!isset($_SESSION['tipo_usuario']) || $_SESSION['tipo_usuario'] !== 'admin') {
     header("Location: ../login.php");
@@ -21,21 +25,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $verifica_stmt->store_result();
 
     if ($verifica_stmt->num_rows > 0) {
-        $mensagem = "Erro: Este login já está em uso. Escolha outro.";
+        $mostrarModal = true;
+        $tituloModal = "Erro ao Cadastrar!";
+        $mensagemModal = "Este login já está em uso. Escolha outro.";
+        $classeModal = "modal-danger";
     } else {
-        $sql = "INSERT INTO usuarios (nome, login, senha, tipo_usuario)
-                VALUES (?, ?, ?, 'admin')";
+        $sql = "INSERT INTO usuarios (nome, login, senha, tipo_usuario) VALUES (?, ?, ?, 'admin')";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sss", $nome, $login, $senha);
 
         if ($stmt->execute()) {
-            $mensagem = "Administrador cadastrado com sucesso!";
+            $mostrarModal = true;
+            $tituloModal = "Administrador Cadastrado!";
+            $mensagemModal = "O administrador foi cadastrado com sucesso!";
+            $classeModal = "modal-success";
         } else {
-            $mensagem = "Erro ao cadastrar administrador: " . $conn->error;
+            $mostrarModal = true;
+            $tituloModal = "Erro ao Salvar!";
+            $mensagemModal = "Ocorreu um erro ao cadastrar o administrador.";
+            $classeModal = "modal-danger";
         }
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -64,10 +77,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .form-control {
             border-radius: 8px;
         }
-
-        .alert {
-            border-radius: 10px;
-        }
     </style>
 </head>
 <body>
@@ -81,13 +90,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class="container py-4">
     <div class="admin-container">
-        <?php if ($mensagem): ?>
-            <div class="alert alert-<?php echo strpos($mensagem, 'Erro') !== false ? 'danger' : 'success'; ?> alert-dismissible fade show text-center">
-                <?= $mensagem ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
-
         <form method="POST" class="needs-validation" novalidate>
             <div class="mb-4">
                 <label for="nome" class="form-label"><i class="fas fa-user me-2"></i>Nome Completo</label>
@@ -119,22 +121,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </div>
 
+<?php if ($mostrarModal): ?>
+<div class="modal fade <?= $classeModal ?>" id="modalFeedback" tabindex="-1" aria-labelledby="modalFeedbackLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><?= $tituloModal ?></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p><?= $mensagemModal ?></p>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = new bootstrap.Modal(document.getElementById('modalFeedback'));
+    modal.show();
+});
+</script>
+<?php endif; ?>
+
 <?php include '../footer.php'; ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    (() => {
-        'use strict';
-        const forms = document.querySelectorAll('.needs-validation');
-        Array.from(forms).forEach(form => {
-            form.addEventListener('submit', event => {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
-        });
-    })();
+(() => {
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
 </script>
 </body>
 </html>

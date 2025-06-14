@@ -3,13 +3,17 @@ session_start();
 include '../conexao.php';
 include '../menu.php';
 
+$mostrarModal = false;
+$tituloModal = "";
+$mensagemModal = "";
+$classeModal = "";
+
 if (!isset($_SESSION['tipo_usuario']) || $_SESSION['tipo_usuario'] !== 'professor') {
     header("Location: ../login.php");
     exit;
 }
 
 $id_materia = $_SESSION['id_materia'];
-$mensagem = '';
 
 $stmtCurso = $conn->prepare("SELECT curso FROM materias WHERE id = ?");
 $stmtCurso->bind_param("i", $id_materia);
@@ -33,10 +37,10 @@ while ($row = $result->fetch_assoc()) {
 
 $cursoMateria = trim($cursoMateria);
 if ($cursoMateria === 'Ambos') {
-    $queryAlunos = "SELECT id_aluno, nome, faltas FROM alunos_aceitos WHERE ativo = 1 ORDER BY nome";
+    $queryAlunos = "SELECT id_aluno, nome FROM alunos_aceitos WHERE ativo = 1 ORDER BY nome";
     $resultAlunos = $conn->query($queryAlunos);
 } else {
-    $stmtAlunos = $conn->prepare("SELECT id_aluno, nome, faltas FROM alunos_aceitos WHERE curso = ? AND ativo = 1 ORDER BY nome");
+    $stmtAlunos = $conn->prepare("SELECT id_aluno, nome FROM alunos_aceitos WHERE curso = ? AND ativo = 1 ORDER BY nome");
     $stmtAlunos->bind_param("s", $cursoMateria);
     $stmtAlunos->execute();
     $resultAlunos = $stmtAlunos->get_result();
@@ -54,7 +58,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
     $resultVerifica = $verifica->get_result();
 
     if ($resultVerifica->num_rows > 0) {
-        $mensagem = "Essa aula já foi registrada!";
+        $mostrarModal = true;
+        $tituloModal = "Erro!";
+        $mensagemModal = "Essa aula já foi registrada!";
+        $classeModal = "modal-danger";
     } else {
         $id_plano = $_POST['id_plano'];
         $nome = $_POST['nome_professor'];
@@ -66,20 +73,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
         $stmtReg->bind_param("issss", $id_plano, $nome, $contato, $status, $conteudo);
 
         if ($stmtReg->execute()) {
+            $id_aula = $stmtReg->insert_id;
+
             if (isset($_POST['presenca'])) {
                 foreach ($_POST['presenca'] as $idAluno => $valor) {
-                    if ($valor === 'Faltou') {
-                        $stmtFalta = $conn->prepare("UPDATE alunos_aceitos SET faltas = faltas + 1 WHERE id_aluno = ?");
-                        $stmtFalta->bind_param("i", $idAluno);
-                        $stmtFalta->execute();
-                    }
+                    $presenca = ($valor === 'Presente') ? 1 : 0;
+                    $stmtFrequencia = $conn->prepare("INSERT INTO frequencia (id_aluno, id_aula, presenca) VALUES (?, ?, ?)");
+                    $stmtFrequencia->bind_param("iii", $idAluno, $id_aula, $presenca);
+                    $stmtFrequencia->execute();
                 }
             }
-            $_SESSION['mensagem_sucesso'] = "Aula registrada com sucesso!";
-            header("Location: registrar_aula.php");
-            exit;
+
+            $mostrarModal = true;
+            $tituloModal = "Sucesso!";
+            $mensagemModal = "Aula registrada com sucesso!";
+            $classeModal = "modal-success";
         } else {
-            $mensagem = "Erro ao registrar aula: " . $conn->error;
+            $mostrarModal = true;
+            $tituloModal = "Erro ao Salvar!";
+            $mensagemModal = "Ocorreu um erro ao registrar a aula.";
+            $classeModal = "modal-danger";
         }
     }
 }
@@ -92,7 +105,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="../style.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .form-container {
@@ -102,22 +114,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
             box-shadow: var(--sombra);
             border-top: 4px solid var(--amarelo-destaque);
         }
-
         .form-label {
             font-weight: 600;
             color: var(--verde-escuro);
             font-size: 110%;
         }
-
         textarea.form-control {
             height: 120px;
         }
-
         .table thead th {
             background-color: var(--verde-principal);
             color: white;
         }
-
         .alert {
             border-radius: 8px;
         }
@@ -131,12 +139,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
 </section>
 
 <div class="container pb-5">
-    <?php if ($mensagem): ?>
-        <div class="alert alert-<?= strpos($mensagem, 'Erro') !== false ? 'danger' : 'success' ?>">
-            <?= $mensagem ?>
-        </div>
-    <?php endif; ?>
-
     <div class="form-container mx-auto" style="max-width: 900px;">
         <form method="POST">
             <div class="mb-3">
@@ -188,7 +190,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
                     <tr>
                         <th>Nome</th>
                         <th>Presença</th>
-                        <th>Faltas</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -201,7 +202,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
                                     <option value="Faltou">Faltou</option>
                                 </select>
                             </td>
-                            <td><?= $aluno['faltas'] ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -219,7 +219,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
     </div>
 </div>
 
-<?php include '../footer.php'; ?>
+<?php if ($mostrarModal): ?>
+<div class="modal fade <?= $classeModal ?>" id="modalFeedback" tabindex="-1" aria-labelledby="modalFeedbackLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><?= $tituloModal ?></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p><?= $mensagemModal ?></p>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-warning" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = new bootstrap.Modal(document.getElementById('modalFeedback'));
+    modal.show();
+});
+</script>
+<?php endif; ?>
+
 <script>
     const planos = <?= json_encode($planos) ?>;
     function atualizarCampoConteudo() {
@@ -238,6 +263,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
 
     document.getElementById('id_plano').addEventListener('change', atualizarCampoConteudo);
 </script>
+<?php include '../footer.php'; ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>

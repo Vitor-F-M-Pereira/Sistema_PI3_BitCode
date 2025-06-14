@@ -3,21 +3,24 @@ session_start();
 include '../conexao.php';
 include '../menu.php';
 
-if (!isset($_SESSION['tipo_usuario']) || $_SESSION['tipo_usuario'] !== 'admin') {
-    header("Location: ../login.php");
-    exit;
-}
+$mostrarModal = false;
+$tituloModal = "";
+$mensagemModal = "";
+$classeModal = "";
 
 if (isset($_SESSION['sucesso'])) {
-    echo '<div class="alert alert-success alert-dismissible fade show">'.$_SESSION['sucesso'].'
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>';
+    $mostrarModal = true;
+    $tituloModal = "Sucesso!";
+    $mensagemModal = $_SESSION['sucesso'];
+    $classeModal = "modal-success";
     unset($_SESSION['sucesso']);
 }
+
 if (isset($_SESSION['erro'])) {
-    echo '<div class="alert alert-danger alert-dismissible fade show">'.$_SESSION['erro'].'
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>';
+    $mostrarModal = true;
+    $tituloModal = "Erro!";
+    $mensagemModal = $_SESSION['erro'];
+    $classeModal = "modal-danger";
     unset($_SESSION['erro']);
 }
 
@@ -26,7 +29,6 @@ $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 $porPagina = 4;
 $offset = ($pagina - 1) * $porPagina;
 
-// Filtro principal
 $where = "";
 
 if ($filtro == 'prevestibular') {
@@ -62,87 +64,71 @@ $resultado = $conn->query($sql);
             padding: 2rem;
             box-shadow: var(--sombra);
         }
-
         .control-header {
             color: var(--verde-escuro);
             font-weight: 700;
             margin-bottom: 1.5rem;
         }
-
         .filter-btn {
             border-radius: 20px;
             padding: 0.5rem 1rem;
             font-size: 0.9rem;
         }
-
         .filter-btn.active {
             background-color: var(--verde-principal);
             color: white;
         }
-
         .filter-btn:not(.active) {
             border: 1px solid #dee2e6;
         }
-
         .filter-btn:not(.active):hover {
             background-color: #f8f9fa;
         }
-
         .table-custom {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
         }
-
         .table-custom thead,
         .table-custom tbody tr {
             display: table;
             width: 100%;
             table-layout: fixed;
         }
-
         .table-custom tbody {
             display: block;
             min-height: 320px;
         }
-
         .table-custom thead th {
             background-color: var(--verde-principal);
             color: white;
             font-weight: 600;
             padding: 1rem;
         }
-
         .table-custom td, .table-custom th {
             height: 70px;
             padding: 1rem;
             border-bottom: 1px solid #eee;
             vertical-align: middle;
         }
-
         .table-custom tbody tr:hover {
             background-color: rgba(0, 136, 148, 0.05);
         }
-
         .password-dots {
             letter-spacing: 3px;
             font-weight: bold;
             color: #6c757d;
         }
-
         .badge-course {
             padding: 0.5em 0.8em;
             font-weight: 600;
             border-radius: 4px;
         }
-
         .badge-prevestibular { background-color: #e3f2fd; color: #0d6efd; }
         .badge-prevestibulinho { background-color: #e8f5e9; color: #198754; }
         .badge-ambos { background-color: #fff3e0; color: #fd7e14; }
-
         .badge-ativo { background-color: #d1e7dd; color: #0f5132; }
         .badge-inativo { background-color: #f8d7da; color: #842029; }
-
     </style>
 </head>
 <body>
@@ -201,24 +187,21 @@ $resultado = $conn->query($sql);
                                 <?php endif; ?>
                             </td>
                             <td>
-    <div class="d-flex gap-2">
-        <a href="editar_materia.php?id=<?= $materia['id'] ?>" class="btn btn-sm btn-outline-primary">
-            <i class="fas fa-edit me-1"></i>Editar
-        </a>
-        <?php if ($materia['ativo'] == 1): ?>
-    <a href="excluir_materia.php?id=<?= $materia['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja inativar esta matéria?')">
-        <i class="fas fa-trash-alt me-1"></i>Inativar
-    </a>
-<?php endif; ?>
-
-        <?php if ($materia['ativo'] == 0): ?>
-            <a href="reativar_materia.php?id=<?= $materia['id'] ?>" class="btn btn-sm btn-outline-success" onclick="return confirm('Deseja reativar esta matéria?')">
-                <i class="fas fa-undo me-1"></i>Reativar
-            </a>
-        <?php endif; ?>
-    </div>
-</td>
-
+                                <div class="d-flex gap-2">
+                                    <a href="editar_materia.php?id=<?= $materia['id'] ?>" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit me-1"></i>Editar
+                                    </a>
+                                    <?php if ($materia['ativo'] == 1): ?>
+                                        <a href="excluir_materia.php?id=<?= $materia['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja inativar esta matéria?')">
+                                            <i class="fas fa-trash-alt me-1"></i>Inativar
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="reativar_materia.php?id=<?= $materia['id'] ?>" class="btn btn-sm btn-outline-success" onclick="return confirm('Deseja reativar esta matéria?')">
+                                            <i class="fas fa-undo me-1"></i>Reativar
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
                         </tr>
                     <?php endwhile; ?>
                 <?php else: ?>
@@ -235,15 +218,15 @@ $resultado = $conn->query($sql);
         </div>
 
         <?php if ($total_paginas > 1): ?>
-        <nav class="mt-4">
-            <ul class="pagination justify-content-center">
-                <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
-                    <li class="page-item <?= $pagina == $i ? 'active' : '' ?>">
-                        <a class="page-link" href="controle_materias.php?filtro=<?= $filtro ?>&pagina=<?= $i ?>"><?= $i ?></a>
-                    </li>
-                <?php endfor; ?>
-            </ul>
-        </nav>
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
+                        <li class="page-item <?= $pagina == $i ? 'active' : '' ?>">
+                            <a class="page-link" href="controle_materias.php?filtro=<?= $filtro ?>&pagina=<?= $i ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+                </ul>
+            </nav>
         <?php endif; ?>
 
         <div class="d-flex justify-content-between mt-4">
@@ -256,6 +239,32 @@ $resultado = $conn->query($sql);
         </div>
     </div>
 </div>
+
+<?php if ($mostrarModal): ?>
+<div class="modal fade <?= $classeModal ?>" id="modalFeedback" tabindex="-1" aria-labelledby="modalFeedbackLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><?= $tituloModal ?></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p><?= $mensagemModal ?></p>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-warning" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = new bootstrap.Modal(document.getElementById('modalFeedback'));
+    modal.show();
+});
+</script>
+<?php endif; ?>
+
 <?php include '../footer.php'; ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

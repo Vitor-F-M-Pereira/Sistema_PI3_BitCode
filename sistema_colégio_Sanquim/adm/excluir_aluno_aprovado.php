@@ -20,9 +20,9 @@ $stmt->bind_param("i", $id);
 $stmt->execute();
 
 if ($stmt->affected_rows > 0) {
-    $_SESSION['mensagem_sucesso'] = "Aluno excluído com sucesso.";
+    $_SESSION['mensagem_sucesso'] = "Aluno inativado com sucesso.";
 } else {
-    $_SESSION['mensagem_sucesso'] = "Este aluno já foi excluído ou não existe.";
+    $_SESSION['mensagem_sucesso'] = "Este aluno já foi inativado ou não existe.";
 }
 
 header("Location: alunos_aprovados.php");

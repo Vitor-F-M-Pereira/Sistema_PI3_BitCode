@@ -64,17 +64,6 @@ include 'menu.php';
         .highlight-box h5 {
             font-size: 1rem;
         }
-
-        .modal-success .modal-header {
-            background-color: var(--verde-principal);
-            color: white;
-            border-bottom: none;
-        }
-
-        .modal-success .modal-footer {
-            border-top: none;
-        }
-
     </style>
 </head>
 <body class="bg-light">

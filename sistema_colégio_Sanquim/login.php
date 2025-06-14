@@ -56,7 +56,6 @@ include 'menu.php';
     </style>
 </head>
 <body>
-    <!-- Cabeçalho estilizado -->
     <section class="hero-section">
         <div class="container text-center">
             <h1 class="mb-2">Acesso Restrito</h1>

@@ -228,3 +228,35 @@ select.form-select {
        border-color: #ffffff;
         transform: translateY(-1px);
     }   
+
+    .modal-success .modal-header {
+    background-color: var(--verde-principal);
+    color: white;
+    border-bottom: none;
+}
+
+.modal-danger .modal-header {
+    background-color: #dc3545;
+    color: white;
+    border-bottom: none;
+}
+
+.modal-success .modal-footer,
+.modal-danger .modal-footer {
+    border-top: none;
+}
+
+.modal-success .btn,
+.modal-danger .btn {
+    background-color: var(--amarelo-destaque);
+    color: black;
+    border: none;
+    font-weight: 600;
+}
+
+.modal-success .btn:hover,
+.modal-danger .btn:hover {
+    filter: brightness(0.9);
+}
+
+

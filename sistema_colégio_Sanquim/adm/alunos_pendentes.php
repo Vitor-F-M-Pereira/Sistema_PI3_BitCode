@@ -3,6 +3,11 @@ session_start();
 include '../conexao.php';
 include '../menu.php';
 
+$mostrarModal = false;
+$tituloModal = "";
+$mensagemModal = "";
+$classeModal = "";
+
 if (!isset($_SESSION['tipo_usuario']) || $_SESSION['tipo_usuario'] !== 'admin') {
     header("Location: ../login.php");
     exit;
@@ -24,6 +29,15 @@ if ($contagem) {
     while ($row = $contagem->fetch_assoc()) {
         $quantidade[$row['curso']] = $row['total'];
     }
+}
+
+// Se tiver mensagem de sucesso na sessão (após aceitar ou rejeitar aluno)
+if (isset($_SESSION['mensagem_sucesso'])) {
+    $mostrarModal = true;
+    $tituloModal = "Sucesso!";
+    $mensagemModal = $_SESSION['mensagem_sucesso'];
+    $classeModal = "modal-success";
+    unset($_SESSION['mensagem_sucesso']);
 }
 
 $sql = "SELECT id_aluno, nome, curso FROM alunos_pendentes WHERE ativo = 1 ORDER BY nome LIMIT $inicio, $porPagina";
@@ -133,102 +147,122 @@ $result = $conn->query($sql);
     </style>
 </head>
 <body>
-    <section class="hero-section">
-        <div class="container">
-            <h1><i class="fas fa-user-clock me-2"></i>Alunos com Matrículas Pendentes</h1>
+<section class="hero-section">
+    <div class="container">
+        <h1><i class="fas fa-user-clock me-2"></i>Alunos com Matrículas Pendentes</h1>
+    </div>
+</section>
+
+<div class="container container-custom">
+    <div class="contadores">
+        <div class="contador contador-vestibular">
+            Pré-Vestibular: <?= $quantidade['Pré-Vestibular'] ?>/20
         </div>
-    </section>
-
-    <div class="container container-custom">
-        <?php if (isset($_SESSION['mensagem_sucesso'])): ?>
-            <div class="alert alert-success text-center">
-                <?= $_SESSION['mensagem_sucesso'] ?>
-                <?php unset($_SESSION['mensagem_sucesso']); ?>
-            </div>
-        <?php endif; ?>
-        <div class="contadores">
-    <div class="contador contador-vestibular">
-        Pré-Vestibular: <?= $quantidade['Pré-Vestibular'] ?>/20
+        <div class="contador contador-vestibulinho">
+            Pré-Vestibulinho: <?= $quantidade['Pré-Vestibulinho'] ?>/20
+        </div>
     </div>
-    <div class="contador contador-vestibulinho">
-        Pré-Vestibulinho: <?= $quantidade['Pré-Vestibulinho'] ?>/20
-    </div>
-</div>
 
-<div class="table-responsive">
-    <table class="table-custom">
-        <thead>
-            <tr>
-                <th>Nome do Aluno</th>
-                <th>Curso</th>
-                <th style="width: 300px;">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if ($result && $result->num_rows > 0): ?>
-                <?php while ($row = $result->fetch_assoc()): 
-                    $curso = $row['curso'];
-                    $bloqueado = ($quantidade[$curso] >= 20);
-                ?>
-                    <tr>
-                        <td class="text-start"><?= htmlspecialchars($row['nome']) ?></td>
-                        <td>
-                            <span class="badge-course <?= $curso === 'Pré-Vestibular' ? 'badge-prevestibular' : 'badge-prevestibulinho' ?>">
-                                <?= htmlspecialchars($curso) ?>
-                            </span>
-                        </td>
-                        <td>
-                            <div class="d-flex justify-content-center">
-                                <a href="visualizar_aluno.php?id=<?= $row['id_aluno'] ?>" class="btn-action btn btn-primary">
-                                    <i class="fas fa-eye me-1"></i>Visualizar
-                                </a>
-                                <?php if (!$bloqueado): ?>
-                                    <a href="aprovar_aluno.php?id=<?= $row['id_aluno'] ?>" class="btn-action btn btn-success">
-                                        <i class="fas fa-check me-1"></i>Aceitar
-                                    </a>
-                                <?php else: ?>
-                                    <button class="btn-action btn btn-secondary" disabled>
-                                        <i class="fas fa-lock me-1"></i>Limite
-                                    </button>
-                                <?php endif; ?>
-                                <a href="rejeitar_aluno.php?id=<?= $row['id_aluno'] ?>" 
-                                   class="btn-action btn btn-danger"
-                                   onclick="return confirm('Tem certeza que deseja rejeitar este aluno?')">
-                                    <i class="fas fa-times me-1"></i>Rejeitar
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
-            <?php else: ?>
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
                 <tr>
-                    <td colspan="3" class="text-muted text-center py-4">Nenhum aluno pendente no momento.</td>
+                    <th>Nome do Aluno</th>
+                    <th>Curso</th>
+                    <th style="width: 300px;">Ações</th>
                 </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</div>
-
-        <?php if ($totalPaginas > 1): ?>
-        <nav>
-            <ul class="pagination justify-content-center mt-4">
-                <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-                    <li class="page-item <?= $i === $pagina ? 'active' : '' ?>">
-                        <a class="page-link" href="?pagina=<?= $i ?>"><?= $i ?></a>
-                    </li>
-                <?php endfor; ?>
-            </ul>
-        </nav>
-        <?php endif; ?>
-
-        <div class="text-end btn-voltar">
-            <a href="controle_alunos.php" class="btn btn-outline-primary">
-                <i class="fas fa-arrow-left me-2"></i>Voltar
-            </a>
-        </div>
+            </thead>
+            <tbody>
+                <?php if ($result && $result->num_rows > 0): ?>
+                    <?php while ($row = $result->fetch_assoc()): 
+                        $curso = $row['curso'];
+                        $bloqueado = ($quantidade[$curso] >= 20);
+                    ?>
+                        <tr>
+                            <td class="text-start"><?= htmlspecialchars($row['nome']) ?></td>
+                            <td>
+                                <span class="badge-course <?= $curso === 'Pré-Vestibular' ? 'badge-prevestibular' : 'badge-prevestibulinho' ?>">
+                                    <?= htmlspecialchars($curso) ?>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <a href="visualizar_aluno.php?id=<?= $row['id_aluno'] ?>" class="btn-action btn btn-primary">
+                                        <i class="fas fa-eye me-1"></i>Visualizar
+                                    </a>
+                                    <?php if (!$bloqueado): ?>
+                                        <a href="aprovar_aluno.php?id=<?= $row['id_aluno'] ?>" class="btn-action btn btn-success">
+                                            <i class="fas fa-check me-1"></i>Aceitar
+                                        </a>
+                                    <?php else: ?>
+                                        <button class="btn-action btn btn-secondary" disabled>
+                                            <i class="fas fa-lock me-1"></i>Limite
+                                        </button>
+                                    <?php endif; ?>
+                                    <a href="rejeitar_aluno.php?id=<?= $row['id_aluno'] ?>" 
+                                       class="btn-action btn btn-danger"
+                                       onclick="return confirm('Tem certeza que deseja rejeitar este aluno?')">
+                                        <i class="fas fa-times me-1"></i>Rejeitar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="3" class="text-muted text-center py-4">Nenhum aluno pendente no momento.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
 
-    <?php include '../footer.php'; ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php if ($totalPaginas > 1): ?>
+    <nav>
+        <ul class="pagination justify-content-center mt-4">
+            <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+                <li class="page-item <?= $i === $pagina ? 'active' : '' ?>">
+                    <a class="page-link" href="?pagina=<?= $i ?>"><?= $i ?></a>
+                </li>
+            <?php endfor; ?>
+        </ul>
+    </nav>
+    <?php endif; ?>
+
+    <div class="text-end btn-voltar mt-4">
+        <a href="controle_alunos.php" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<?php if ($mostrarModal): ?>
+<div class="modal fade <?= $classeModal ?>" id="modalFeedback" tabindex="-1" aria-labelledby="modalFeedbackLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><?= $tituloModal ?></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p><?= $mensagemModal ?></p>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = new bootstrap.Modal(document.getElementById('modalFeedback'));
+    modal.show();
+});
+</script>
+<?php endif; ?>
+
+<?php include '../footer.php'; ?>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

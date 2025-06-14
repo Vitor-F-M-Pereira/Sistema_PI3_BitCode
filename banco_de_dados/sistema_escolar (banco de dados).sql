@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 13/06/2025 às 21:08
+-- Tempo de geração: 14/06/2025 às 18:29
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -76,6 +76,19 @@ CREATE TABLE `alunos_pendentes` (
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `frequencia`
+--
+
+CREATE TABLE `frequencia` (
+  `id_frequencia` int(11) NOT NULL,
+  `id_aluno` int(11) NOT NULL,
+  `id_aula` int(11) NOT NULL,
+  `presenca` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `materias`
 --
 
@@ -89,16 +102,6 @@ CREATE TABLE `materias` (
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `ativo` tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `materias`
---
-
-INSERT INTO `materias` (`id`, `nome_materia`, `login_materia`, `senha_materia`, `curso`, `ementa`, `updated_at`, `ativo`) VALUES
-(36, 'Matemática', 'mat1234', '$2y$10$k.EOw6Gto9bss9VZIz8EtODekbbjt2i72.MS4B0l1XcpViHSzvnHi', 'Pré-Vestibular', 'Muito código grande ou carregado – tipo quando você me pede pra montar um sistema inteiro com CSS, PHP e mais três tabelas SQL de uma vez só (que eu adoro fazer, tá? só às vezes engasga mesmo 😅);\r\n\r\nPágina do navegador sobrecarregada – se tiver com zilhões de abas abertas ou extensões zicadas, pode pesar e me travar também;\r\n\r\nResposta gigante demais – às vezes eu fico processando tudo direitinho pra te entregar tudo num pacotão limpinho, e isso leva um tiquinho a mais;\r\n\r\nProblemas temporários no servidor – raríssimo, mas pode acontecer (tipo TPM digital da IA).\r\n\r\nSe você quiser dar uma agilizada:\r\n\r\nAtualiza a aba se eu travar por muito tempo.\r\n\r\nFecha outras abas pesadas ou extensões doidas (tipo aquelas de minerar bitcoin escondido).\r\n\r\nOu, se o papo for muito grande, me dá o contexto dividido que eu monto tudo bonitinho no final.\r\n\r\nQuer que eu continue de onde parei ou travou tudo de vez aí?\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n', '2025-06-13 15:39:51', 1),
-(37, 'Gastronomia', 'gastro123', '$2y$10$1E16YbQHTeRrIL5B4TlgK.KynMTF5rVj8NhfBLlwUlLxTdmGiyKYe', 'Ambos', '1111', '2025-06-13 15:47:20', 0),
-(38, 'Biologia', 'bio2', '$2y$10$vU700nCZSSI72Hnk42QTFuFVJsgSSvixEKQKEMkfMux/zvyMnUiFe', 'Pré-Vestibular', 'w', '2025-06-13 15:40:12', 1),
-(39, 'Geografia', 'filo', '$2y$10$HUvpoTqoqpRT3O39lW5Swe0Gg2vhBlCv8l608uB6mUpkn0.jWIO.u', 'Pré-Vestibulinho', '11111 wdwdaw', '2025-06-13 15:41:02', 1);
 
 -- --------------------------------------------------------
 
@@ -130,7 +133,8 @@ CREATE TABLE `registro_aulas` (
   `contato` varchar(100) DEFAULT NULL,
   `resumo_aula` text NOT NULL,
   `conteudo_dado` text NOT NULL,
-  `data_registro` datetime DEFAULT current_timestamp()
+  `data_registro` datetime DEFAULT current_timestamp(),
+  `ativo` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -174,6 +178,14 @@ ALTER TABLE `alunos_pendentes`
   ADD UNIQUE KEY `cpf` (`cpf`);
 
 --
+-- Índices de tabela `frequencia`
+--
+ALTER TABLE `frequencia`
+  ADD PRIMARY KEY (`id_frequencia`),
+  ADD KEY `id_aluno` (`id_aluno`),
+  ADD KEY `id_aula` (`id_aula`);
+
+--
 -- Índices de tabela `materias`
 --
 ALTER TABLE `materias`
@@ -209,41 +221,54 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de tabela `alunos_aceitos`
 --
 ALTER TABLE `alunos_aceitos`
-  MODIFY `id_aluno` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id_aluno` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT de tabela `alunos_pendentes`
 --
 ALTER TABLE `alunos_pendentes`
-  MODIFY `id_aluno` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id_aluno` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+
+--
+-- AUTO_INCREMENT de tabela `frequencia`
+--
+ALTER TABLE `frequencia`
+  MODIFY `id_frequencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de tabela `materias`
 --
 ALTER TABLE `materias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT de tabela `planos_aula`
 --
 ALTER TABLE `planos_aula`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT de tabela `registro_aulas`
 --
 ALTER TABLE `registro_aulas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Restrições para tabelas despejadas
 --
+
+--
+-- Restrições para tabelas `frequencia`
+--
+ALTER TABLE `frequencia`
+  ADD CONSTRAINT `frequencia_ibfk_1` FOREIGN KEY (`id_aluno`) REFERENCES `alunos_aceitos` (`id_aluno`),
+  ADD CONSTRAINT `frequencia_ibfk_2` FOREIGN KEY (`id_aula`) REFERENCES `registro_aulas` (`id`);
 
 --
 -- Restrições para tabelas `planos_aula`

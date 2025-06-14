@@ -8,7 +8,7 @@ if (!isset($_SESSION['tipo_usuario']) || $_SESSION['tipo_usuario'] !== 'admin') 
     exit;
 }
 
-// Buscar nome do administrador logado
+
 $nome = 'Administrador';
 if (isset($_SESSION['id_usuario'])) {
     $id = $_SESSION['id_usuario'];
