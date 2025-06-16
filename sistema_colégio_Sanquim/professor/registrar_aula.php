@@ -8,7 +8,6 @@ $tituloModal = "";
 $mensagemModal = "";
 $classeModal = "";
 
-// Exibir modal de sucesso após redirecionamento
 if (isset($_GET['sucesso']) && $_GET['sucesso'] == 1) {
     $mostrarModal = true;
     $tituloModal = "Sucesso!";

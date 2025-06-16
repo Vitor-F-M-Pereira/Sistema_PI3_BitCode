@@ -45,11 +45,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             move_uploaded_file($_FILES['documentos']['tmp_name'][0], $comprovante_nome);
         }
 
-        // Verificar CPF do aluno e do responsável nas duas tabelas
+      
 $cpfDuplicado = false;
 $cpfResponsavelDuplicado = false;
 
-// Verificar CPF do aluno
+
 $verificaAluno = $conn->prepare("
     SELECT id_aluno FROM alunos_pendentes WHERE cpf = ?
     UNION
@@ -86,7 +86,7 @@ if (!empty($cpf_responsavel)) {
     }
 }
 
-// Exibir mensagens de erro específicas
+
 if ($cpfDuplicado) {
     $mostrarModal = true;
     $tituloModal = "CPF Duplicado!";
