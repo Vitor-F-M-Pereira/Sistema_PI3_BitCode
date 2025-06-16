@@ -59,6 +59,7 @@ $aula = $result->fetch_assoc();
             color: var(--verde-escuro);
             padding: 0.75rem;
             width: 35%;
+            
         }
 
         .form-container td {

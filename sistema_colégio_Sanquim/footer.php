@@ -45,7 +45,7 @@
     
     <footer>
         <div class="footer">
-            <p>Projeto Edu-Pré • Colégio Sanquim © <?php echo date('Y'); ?></p>
+            <p>Projeto • Colégio Sanquim © <?php echo date('Y'); ?></p>
             <p>Desenvolvido por BitCode</p>
         </div>
     </footer>

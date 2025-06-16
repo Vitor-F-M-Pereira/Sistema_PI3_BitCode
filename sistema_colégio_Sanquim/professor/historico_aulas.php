@@ -73,9 +73,16 @@ $total_paginas = ceil($result_total['total'] / $por_pagina);
             background-color: var(--verde-principal);
             color: white;
         }
+.table-historico th{
+background-color: var(--verde-principal);
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+            }
 
         .table-historico th,
         .table-historico td {
+            
             padding: 1rem;
             text-align: left;
             vertical-align: middle;

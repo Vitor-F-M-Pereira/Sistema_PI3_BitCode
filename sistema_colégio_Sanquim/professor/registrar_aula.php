@@ -1,12 +1,20 @@
 <?php
 session_start();
 include '../conexao.php';
-include '../menu.php';
+
 
 $mostrarModal = false;
 $tituloModal = "";
 $mensagemModal = "";
 $classeModal = "";
+
+// Exibir modal de sucesso após redirecionamento
+if (isset($_GET['sucesso']) && $_GET['sucesso'] == 1) {
+    $mostrarModal = true;
+    $tituloModal = "Sucesso!";
+    $mensagemModal = "Aula registrada com sucesso!";
+    $classeModal = "modal-success";
+}
 
 if (!isset($_SESSION['tipo_usuario']) || $_SESSION['tipo_usuario'] !== 'professor') {
     header("Location: ../login.php");
@@ -84,10 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
                 }
             }
 
-            $mostrarModal = true;
-            $tituloModal = "Sucesso!";
-            $mensagemModal = "Aula registrada com sucesso!";
-            $classeModal = "modal-success";
+            header("Location: registrar_aula.php?sucesso=1");
+            exit;
         } else {
             $mostrarModal = true;
             $tituloModal = "Erro ao Salvar!";
@@ -96,6 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
         }
     }
 }
+include '../menu.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -175,12 +182,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['id_plano'])) {
             </div>
 
             <div class="mb-3" id="campoConteudoNormal" style="display: none;">
-                <label class="form-label">Conteúdo Planejado</label>
+                <label class="form-label">Conteúdo planejado e ministrado:</label>
                 <textarea name="conteudo_planejado" class="form-control"></textarea>
             </div>
 
             <div class="mb-3" id="campoConteudoParcial" style="display: none;">
-                <label class="form-label">Conteúdo Ministrado</label>
+                <label class="form-label">Informe o conteúdo ministrado e (ou) o motivo:</label>
                 <textarea name="conteudo_dado" class="form-control"></textarea>
             </div>
 

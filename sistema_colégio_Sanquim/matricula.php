@@ -28,39 +28,91 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cpf_responsavel = $_POST['cpf_responsavel'] ?? null;
     $curso = $_POST['curso'];
 
-    $comprovante_nome = null;
-    if (isset($_FILES['documentos']) && $_FILES['documentos']['error'][0] === UPLOAD_ERR_OK) {
-        if (!is_dir('comprovantes/')) mkdir('comprovantes/', 0777, true);
-        $ext = pathinfo($_FILES['documentos']['name'][0], PATHINFO_EXTENSION);
-        $nome_arquivo = uniqid() . '.' . $ext;
-        $comprovante_nome = 'comprovantes/' . $nome_arquivo;
-        move_uploaded_file($_FILES['documentos']['tmp_name'][0], $comprovante_nome);
-    }
-
-    $verificaCpf = $conn->prepare("SELECT id_aluno FROM alunos_pendentes WHERE cpf = ?");
-    $verificaCpf->bind_param("s", $cpf);
-    $verificaCpf->execute();
-    $verificaCpf->store_result();
-
-    if ($verificaCpf->num_rows > 0) {
+    // BLOQUEIO DE DATA FUTURA (Back-End)
+    $dataAtual = date('Y-m-d');
+    if ($data_nascimento > $dataAtual) {
         $mostrarModal = true;
-        $tituloModal = "Erro na Matrícula!";
-        $mensagemModal = "Este CPF já está cadastrado.";
+        $tituloModal = "Data Inválida!";
+        $mensagemModal = "A data de nascimento não pode ser no futuro.";
         $classeModal = "modal-danger";
     } else {
-        $stmt = $conn->prepare("INSERT INTO alunos_pendentes (nome, cpf, data_nascimento, cep, rua, bairro, cidade, estado, numero, tipo_residencia, nome_responsavel, cpf_responsavel, curso, comprovante_residencia) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssssssssss", $nome, $cpf, $data_nascimento, $cep, $rua, $bairro, $cidade, $estado, $numero, $tipo_residencia, $responsavel, $cpf_responsavel, $curso, $comprovante_nome);
-        if ($stmt->execute()) {
-            $mostrarModal = true;
-            $tituloModal = "Matrícula Realizada!";
-            $mensagemModal = "Sua pré-matrícula foi enviada com sucesso!";
-            $classeModal = "modal-success";
-        } else {
-            $mostrarModal = true;
-            $tituloModal = "Erro ao Salvar!";
-            $mensagemModal = "Ocorreu um erro ao registrar a matrícula.";
-            $classeModal = "modal-danger";
+        $comprovante_nome = null;
+        if (isset($_FILES['documentos']) && $_FILES['documentos']['error'][0] === UPLOAD_ERR_OK) {
+            if (!is_dir('comprovantes/')) mkdir('comprovantes/', 0777, true);
+            $ext = pathinfo($_FILES['documentos']['name'][0], PATHINFO_EXTENSION);
+            $nome_arquivo = uniqid() . '.' . $ext;
+            $comprovante_nome = 'comprovantes/' . $nome_arquivo;
+            move_uploaded_file($_FILES['documentos']['tmp_name'][0], $comprovante_nome);
         }
+
+        // Verificar CPF do aluno e do responsável nas duas tabelas
+$cpfDuplicado = false;
+$cpfResponsavelDuplicado = false;
+
+// Verificar CPF do aluno
+$verificaAluno = $conn->prepare("
+    SELECT id_aluno FROM alunos_pendentes WHERE cpf = ?
+    UNION
+    SELECT id_aluno FROM alunos_aceitos WHERE cpf = ?
+    UNION
+    SELECT id_aluno FROM alunos_pendentes WHERE cpf_responsavel = ?
+    UNION
+    SELECT id_aluno FROM alunos_aceitos WHERE cpf_responsavel = ?
+");
+$verificaAluno->bind_param("ssss", $cpf, $cpf, $cpf, $cpf);
+$verificaAluno->execute();
+$verificaAluno->store_result();
+
+if ($verificaAluno->num_rows > 0) {
+    $cpfDuplicado = true;
+}
+
+if (!empty($cpf_responsavel)) {
+    $verificaResponsavel = $conn->prepare("
+        SELECT id_aluno FROM alunos_pendentes WHERE cpf = ?
+        UNION
+        SELECT id_aluno FROM alunos_aceitos WHERE cpf = ?
+        UNION
+        SELECT id_aluno FROM alunos_pendentes WHERE cpf_responsavel = ?
+        UNION
+        SELECT id_aluno FROM alunos_aceitos WHERE cpf_responsavel = ?
+    ");
+    $verificaResponsavel->bind_param("ssss", $cpf_responsavel, $cpf_responsavel, $cpf_responsavel, $cpf_responsavel);
+    $verificaResponsavel->execute();
+    $verificaResponsavel->store_result();
+
+    if ($verificaResponsavel->num_rows > 0) {
+        $cpfResponsavelDuplicado = true;
+    }
+}
+
+// Exibir mensagens de erro específicas
+if ($cpfDuplicado) {
+    $mostrarModal = true;
+    $tituloModal = "CPF Duplicado!";
+    $mensagemModal = "O CPF informado para o aluno já está cadastrado no sistema.";
+    $classeModal = "modal-danger";
+} elseif ($cpfResponsavelDuplicado) {
+    $mostrarModal = true;
+    $tituloModal = "CPF do Responsável já Cadastrado!";
+    $mensagemModal = "O CPF do responsável já existe no sistema, vinculado a outro aluno.";
+    $classeModal = "modal-danger";
+} else {
+    // Aqui entra o bloco normal de INSERT que você já tinha antes
+    $stmt = $conn->prepare("INSERT INTO alunos_pendentes (nome, cpf, data_nascimento, cep, rua, bairro, cidade, estado, numero, tipo_residencia, nome_responsavel, cpf_responsavel, curso, comprovante_residencia) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssssssssssss", $nome, $cpf, $data_nascimento, $cep, $rua, $bairro, $cidade, $estado, $numero, $tipo_residencia, $responsavel, $cpf_responsavel, $curso, $comprovante_nome);
+    if ($stmt->execute()) {
+        $mostrarModal = true;
+        $tituloModal = "Matrícula Realizada!";
+        $mensagemModal = "Sua pré-matrícula foi enviada com sucesso!";
+        $classeModal = "modal-success";
+    } else {
+        $mostrarModal = true;
+        $tituloModal = "Erro ao Salvar!";
+        $mensagemModal = "Ocorreu um erro ao registrar a matrícula.";
+        $classeModal = "modal-danger";
+    }
+}
     }
 }
 
@@ -174,7 +226,7 @@ include 'menu.php';
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="data_nascimento" class="form-label">Data de Nascimento</label>
-                            <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" required onchange="verificarIdade()">
+                            <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" required onchange="verificarIdade()" max="<?= date('Y-m-d') ?>">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="curso" class="form-label">Curso</label>
@@ -316,6 +368,36 @@ function buscarEndereco() {
 }
 </script>
 <script>
+function verificarIdade() {
+    const campoData = document.getElementById('data_nascimento');
+    const dataSelecionada = new Date(campoData.value);
+    const hoje = new Date();
+
+    // Remover a hora pra comparar só as datas
+    hoje.setHours(0, 0, 0, 0);
+    dataSelecionada.setHours(0, 0, 0, 0);
+
+    if (dataSelecionada > hoje) {
+        alert('A data de nascimento não pode ser no futuro!');
+        campoData.value = '';
+        document.getElementById('campos-responsavel').style.display = 'none';
+        return;
+    }
+
+    let idade = hoje.getFullYear() - dataSelecionada.getFullYear();
+    const m = hoje.getMonth() - dataSelecionada.getMonth();
+    if (m < 0 || (m === 0 && hoje.getDate() < dataSelecionada.getDate())) idade--;
+
+    document.getElementById('campos-responsavel').style.display = (idade < 18) ? 'block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const dataNascimentoInput = document.getElementById('data_nascimento');
+    const hoje = new Date().toISOString().split('T')[0];
+    dataNascimentoInput.setAttribute('max', hoje);
+});
+</script>
+<script>
         $(document).ready(function () {
             $('#cpf').inputmask('999.999.999-99');
             $('#cpf_responsavel').inputmask('999.999.999-99');
@@ -332,6 +414,7 @@ function buscarEndereco() {
             });
         });
     </script>
+
 <?php include 'footer.php'; ?>
 </body>
 </html>
